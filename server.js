@@ -2,14 +2,27 @@ const express = require('express');
 const bodyparser = require('body-parser');
 const mongoose = require('mongoose');
 const app = express();
-
 const {PORT, DATABASE_URL} = require('./config');
+const {Blogpost} = require('./models');
 
 app.use(bodyparser.json());
 
 mongoose.Promise = global.Promise;
 
-
+app.get('/posts', (req, res) => {
+  Blogpost
+    .find({})
+    .exec()
+    .then(blogposts => {
+      const response = blogposts.map(post => post.apiRepr());
+      // console.log(response);
+      res.json(response);
+    })
+    .catch(err => {
+      console.error(err);
+      res.status(500).json({message: 'internal server error'})
+    });
+});
 
 let server;
 function runServer(databaseUrl = DATABASE_URL, port = PORT) {
